@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Customer Manager</title>
+</head>
+
+<body>
+
+<h2>Add Customer</h2>
+
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="phone" placeholder="Phone">
+<input id="address" placeholder="Address">
+
+<button onclick="addCustomer()">Add</button>
+
+<h2>Customer List</h2>
+
+<ul id="list"></ul>
+
+<script>
+
+let customers=[]
+
+function addCustomer(){
+
+let name=document.getElementById("name").value
+let email=document.getElementById("email").value
+let phone=document.getElementById("phone").value
+let address=document.getElementById("address").value
+
+let customer={name,email,phone,address}
+
+customers.push(customer)
+
+render()
+
+}
+
+function render(){
+
+let html=""
+
+customers.forEach(c=>{
+
+html+=`<li>
+
+${c.name} - ${c.email}
+
+</li>`
+
+})
+
+document.getElementById("list").innerHTML=html
+
+}
+
+</script>
+
+</body>
+
+</html>
