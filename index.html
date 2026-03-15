@@ -111,11 +111,7 @@ margin-right:8px;
 
 </div>
 
-<!-- Search -->
-
 <input class="form-control mb-3" placeholder="Search customer..." onkeyup="searchCustomer(this.value)">
-
-<!-- Add Customer -->
 
 <div class="card p-4 shadow mb-4">
 
@@ -146,8 +142,6 @@ margin-right:8px;
 </div>
 
 </div>
-
-<!-- Table -->
 
 <div class="card p-4 shadow">
 
@@ -188,12 +182,23 @@ margin-right:8px;
 
 <script>
 
-let customers = JSON.parse(localStorage.getItem("customers")) || []
-let emailCount = 0
-let smsCount = 0
+const API = "http://localhost:3000"
 
-function saveData(){
-localStorage.setItem("customers",JSON.stringify(customers))
+let customers=[]
+let emailCount=0
+let smsCount=0
+
+function loadCustomers(){
+
+fetch(API+"/customers")
+.then(res=>res.json())
+.then(data=>{
+
+customers=data
+render()
+
+})
+
 }
 
 function addCustomer(){
@@ -203,10 +208,24 @@ let email=document.getElementById("email").value
 let phone=document.getElementById("phone").value
 let address=document.getElementById("address").value
 
-customers.push({name,email,phone,address})
+fetch(API+"/customers",{
 
-saveData()
-render()
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name,email,phone,address
+})
+
+})
+.then(()=>{
+
+loadCustomers()
+
+})
 
 }
 
@@ -222,7 +241,7 @@ table.innerHTML+=`
 
 <tr>
 
-<td><input type="checkbox" class="selectCustomer" value="${i}"></td>
+<td><input type="checkbox" class="selectCustomer" value="${c.id}"></td>
 
 <td>
 <div style="display:flex;align-items:center">
@@ -239,11 +258,11 @@ ${c.name}
 
 <td>
 
-<button onclick="editCustomer(${i})" class="btn btn-info btn-sm">
+<button onclick="editCustomer(${c.id})" class="btn btn-info btn-sm">
 Edit
 </button>
 
-<button onclick="deleteCustomer(${i})" class="btn btn-danger btn-sm">
+<button onclick="deleteCustomer(${c.id})" class="btn btn-danger btn-sm">
 Delete
 </button>
 
@@ -259,28 +278,42 @@ document.getElementById("totalCustomers").innerText=customers.length
 
 }
 
-function deleteCustomer(i){
+function deleteCustomer(id){
 
-customers.splice(i,1)
-
-saveData()
-render()
+fetch(API+"/customers/"+id,{
+method:"DELETE"
+})
+.then(()=>{
+loadCustomers()
+})
 
 }
 
-function editCustomer(i){
+function editCustomer(id){
 
-let c = customers[i]
+let c = customers.find(x=>x.id==id)
 
 let name = prompt("Edit name",c.name)
 let email = prompt("Edit email",c.email)
 let phone = prompt("Edit phone",c.phone)
 let address = prompt("Edit address",c.address)
 
-customers[i]={name,email,phone,address}
+fetch(API+"/customers/"+id,{
 
-saveData()
-render()
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name,email,phone,address
+})
+
+})
+.then(()=>{
+loadCustomers()
+})
 
 }
 
@@ -308,7 +341,12 @@ let checkboxes=document.querySelectorAll(".selectCustomer:checked")
 let selected=[]
 
 checkboxes.forEach(cb=>{
-selected.push(customers[cb.value])
+
+let id=cb.value
+let customer=customers.find(c=>c.id==id)
+
+selected.push(customer)
+
 })
 
 return selected
@@ -349,7 +387,7 @@ alert("SMS sent to "+selected.length+" customers")
 
 }
 
-render()
+loadCustomers()
 
 </script>
 
